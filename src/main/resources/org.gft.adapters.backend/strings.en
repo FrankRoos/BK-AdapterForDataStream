@@ -1,0 +1,23 @@
+org.gft.adapters.backend.title= HTTP Set (Backend KYKLOS)
+org.gft.adapters.backend.description=Regularly Poll an HTTP Endpoint.
+
+username.title=Username
+username.description=Username
+
+password.title=Password
+password.description=User dedicated password
+
+length.title=Length
+length.description=Number of data to retrieve (max 30.000 for about four months data)
+
+lowest_date.title=From - Lowest Date of the Interval
+lowest_date.description=First value of the key for filtering - Example: 2022-07-21 (YYYY-MM-DD)
+
+highest_date.title=To - Highest Date of the Interval
+highest_date.description=Last value of the key for filtering - Example: 2022-12-21 (YYYY-MM-DD)
+
+signal.title=Signal Name
+signal.description=Insert the name of the sensor signal
+
+
+
