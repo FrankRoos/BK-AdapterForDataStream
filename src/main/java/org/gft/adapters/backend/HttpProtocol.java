@@ -52,8 +52,9 @@ import java.util.Map;
        write documentation
  */
 
-public class HttpProtocol extends Protocol {
+public class HttpProtocol extends PullProtocol {
 
+  private static final long interval = 360;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
@@ -63,7 +64,7 @@ public class HttpProtocol extends Protocol {
   }
 
   public HttpProtocol(IParser parser, IFormat format, HttpConfig config) {
-    super(parser, format);
+    super(parser, format, interval);
     this.config = config;
     this.accessToken = login();
     System.out.println(this.accessToken);
@@ -81,7 +82,7 @@ public class HttpProtocol extends Protocol {
             .requiredTextParameter(HttpUtils.getSignalLabel())
             .requiredIntegerParameter(HttpUtils.getLengthLabel())
             .requiredTextParameter(HttpUtils.getLowestLabel())
-            .requiredTextParameter(HttpUtils.getHighestLabel())
+            .requiredTextParameter(HttpUtils.getHighestLabel(), "CurrentDateTime")
             .build();
   }
 
