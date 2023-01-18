@@ -1,4 +1,4 @@
-org.gft.adapters.backend.title= HTTP Set (Backend KYKLOS)
+org.gft.adapters.backend.title= HTTP Stream (Backend KYKLOS)
 org.gft.adapters.backend.description=Regularly Poll an HTTP Endpoint.
 
 username.title=Username
@@ -8,7 +8,7 @@ password.title=Password
 password.description=User dedicated password
 
 length.title=Length
-length.description=Number of data to retrieve (max 30.000 for about four months data)
+length.description=Number of data to retrieve (max 30.000 for about three months data)
 
 lowest_date.title=From - Lowest Date of the Interval
 lowest_date.description=First value of the key for filtering - Example: 2022-07-21 (YYYY-MM-DD)

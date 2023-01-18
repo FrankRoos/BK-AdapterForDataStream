@@ -1,4 +1,4 @@
-org.gft.adapters.backend.title= HTTP Set (Backend KYKLOS)
+org.gft.adapters.backend.title= HTTP Stream (Backend KYKLOS)
 org.gft.adapters.backend.description=Regularly Poll an HTTP Endpoint.
 
 username.title=Username

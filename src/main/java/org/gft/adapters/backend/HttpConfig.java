@@ -68,6 +68,9 @@ public class HttpConfig {
     public String getGrantType(){
         return "password";
     }
+    public String getHighestDate(){
+        return highest_date;
+    }
 
     public String getScope(){
         return "read_scheduler_administrator write_scheduler_administrator read_dashboards_administrator write_dashboards_administrator " +
@@ -82,15 +85,15 @@ public class HttpConfig {
                     "write_signal_readings_basic_user delete_signal_readings_basic_user read_profile_new_user";
     }
 
-    public String getFilter() {
+    public String getFilter(String highest_date) {
         if(this.pindos_signals.has(this.signal_name)){
             this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
                     "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
-                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ this.highest_date +" 00:00:00\"}]";
+                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ highest_date +" 23:59:59\"}]";
         } else if (this.astander_signals.has(this.signal_name)) {
             this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
                     "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
-                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ this.highest_date +" 00:00:00\"}]";
+                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ highest_date +" 23:59:59\"}]";
         }
         System.out.println(this.filter);
         return this.filter;

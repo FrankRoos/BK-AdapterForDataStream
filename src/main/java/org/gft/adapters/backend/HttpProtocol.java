@@ -20,11 +20,9 @@ package org.gft.adapters.backend;
 
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
-import org.apache.streampipes.connect.SendToPipeline;
 import org.apache.streampipes.connect.adapter.guess.SchemaGuesser;
 import org.apache.streampipes.connect.adapter.model.generic.Protocol;
 import org.apache.streampipes.connect.adapter.sdk.ParameterExtractor;
-import org.apache.streampipes.connect.api.IAdapterPipeline;
 import org.apache.streampipes.connect.api.IFormat;
 import org.apache.streampipes.connect.api.IParser;
 import org.apache.streampipes.connect.api.exception.ParseException;
@@ -43,6 +41,8 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +54,10 @@ import java.util.Map;
 
 public class HttpProtocol extends PullProtocol {
 
-  private static final long interval = 360;
+  private static final long interval = 300;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
-  private String accessToken;
 
   public HttpProtocol() {
   }
@@ -66,8 +65,6 @@ public class HttpProtocol extends PullProtocol {
   public HttpProtocol(IParser parser, IFormat format, HttpConfig config) {
     super(parser, format, interval);
     this.config = config;
-    this.accessToken = login();
-    System.out.println(this.accessToken);
   }
 
   @Override
@@ -76,7 +73,7 @@ public class HttpProtocol extends PullProtocol {
             .withAssets(Assets.DOCUMENTATION, Assets.ICON)
             .withLocales(Locales.EN)
             .category(AdapterType.Generic)
-            .sourceType(AdapterSourceType.SET)
+            .sourceType(AdapterSourceType.STREAM)
             .requiredTextParameter(HttpUtils.getUsernameLabel())
             .requiredSecret(HttpUtils.getPasswordLabel())
             .requiredTextParameter(HttpUtils.getSignalLabel())
@@ -94,38 +91,18 @@ public class HttpProtocol extends PullProtocol {
   }
 
   @Override
-  public void run(IAdapterPipeline adapterPipeline) {
-
-    // TODO fix this. Currently needed because it must be wait till the whole pipeline is up and running
-    try {
-      Thread.sleep(7000);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
-
-    SendToPipeline stk = new SendToPipeline(format, adapterPipeline);
-
-    InputStream data = getDataFromEndpoint();
-    try {
-      parser.parse(data, stk);
-
-    } catch (ParseException e) {
-      logger.error("Error while parsing: " + e.getMessage());
-    }
-  }
-
-  @Override
-  public void stop() {
-
-  }
-
-  @Override
   public GuessSchema getGuessSchema() throws ParseException {
+    int n = 2;
 
     InputStream dataInputStream = getDataFromEndpoint();
 
-    List<byte[]> dataByte = parser.parseNEvents(dataInputStream, 2);
+    List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
+    if (dataByte.size() < n) {
+      logger.error("Error in HttpStreamProtocol! Required: " + n + " elements but the resource just had: " +
+              dataByte.size());
 
+      dataByte.addAll(dataByte);
+    }
     EventSchema eventSchema= parser.getEventSchema(dataByte);
 
     return SchemaGuesser.guessSchema(eventSchema);
@@ -133,29 +110,41 @@ public class HttpProtocol extends PullProtocol {
 
   @Override
   public List<Map<String, Object>> getNElements(int n) throws ParseException {
-
     List<Map<String, Object>> result = new ArrayList<>();
 
     InputStream dataInputStream = getDataFromEndpoint();
 
-    List<byte[]> dataByteArray = parser.parseNEvents(dataInputStream, n);
+    List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
 
     // Check that result size is n. Currently just an error is logged. Maybe change to an exception
-    if (dataByteArray.size() < n) {
-      logger.error("Error in HttpProtocol! User required: " + n + " elements but the resource just had: " +
-              dataByteArray.size());
+    if (dataByte.size() < n) {
+      logger.error("Error in HttpStreamProtocol! User required: " + n + " elements but the resource just had: " +
+              dataByte.size());
     }
 
-    for (byte[] b : dataByteArray) {
+    for (byte[] b : dataByte) {
       result.add(format.parse(b));
     }
 
     return result;
   }
 
+  @Override
+  public void stop() {
+
+  }
+
   public InputStream getDataFromEndpoint() throws ParseException {
+    String urlString;
     InputStream result = null;
-    String  urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter()+"&sort="+config.getSort();
+    String accessToken = login();
+
+    if(config.getHighestDate().equals("CurrentDateTime")){
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(CurrentDateTime())+"&sort="+config.getSort();
+    }else {
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.getHighestDate())+"&sort="+config.getSort();
+    }
+
     //replace spaces by "%20" to avoid 400 Bad Request
     if(urlString.contains(" "))
       urlString = urlString.replace(" ", "%20");
@@ -169,12 +158,12 @@ public class HttpProtocol extends PullProtocol {
       connection.setRequestProperty("Content-Type", "application/json");
       connection.setRequestProperty("Accept", "application/json");
       // Set the token in the HTTP header of the request
-      connection.setRequestProperty("Authorization", "Bearer " + this.accessToken);
-      connection.setRequestProperty("transfer-encoding", "chunked");
-      connection.setRequestProperty("connection", "keep-alive");
+      connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+      connection.setRequestProperty("Transfer-Encoding", "chunked");
+      connection.setRequestProperty("Connection", "keep-alive");
       connection.setDoOutput(true);
-      connection.setConnectTimeout(60000);
-      connection.setReadTimeout(120000);
+      connection.setConnectTimeout(4000000);
+      connection.setReadTimeout(400000);
       // Send the GET request to the API endpoint
       connection.connect();
 
@@ -185,6 +174,14 @@ public class HttpProtocol extends PullProtocol {
       e.printStackTrace();
     }
     return result;
+  }
+
+  public String CurrentDateTime(){
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    LocalDateTime now = LocalDateTime.now();
+    System.out.println(dtf2.format(now));
+    return dtf.format(now);
   }
 
   @Override
