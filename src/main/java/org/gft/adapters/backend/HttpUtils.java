@@ -1,6 +1,6 @@
 package org.gft.adapters.backend;
 
-import org.apache.streampipes.connect.adapter.sdk.ParameterExtractor;
+import org.apache.streampipes.sdk.extractor.StaticPropertyExtractor;
 import org.apache.streampipes.sdk.helpers.Label;
 import org.apache.streampipes.sdk.helpers.Labels;
 
@@ -36,14 +36,14 @@ public class HttpUtils {
         return Labels.withId(HIGHEST_DATE);
     }
 
-    public static HttpConfig getConfig(ParameterExtractor extractor) {
+    public static HttpConfig getConfig(StaticPropertyExtractor extractor) {
 
-        String username = extractor.singleValue(USERNAME_KEY, String.class).trim();
+        String username = extractor.singleValueParameter(USERNAME_KEY, String.class).trim();
         String password = extractor.secretValue(PASSWORD_KEY);
-        String signal_name = extractor.singleValue(SENSOR_SIGNAL, String.class).trim();
-        String lowest_date = extractor.singleValue(LOWEST_DATE, String.class).trim();//TODO .strip
-        String highest_date = extractor.singleValue(HIGHEST_DATE, String.class).trim();//TODO .strip
-        Integer length = extractor.singleValue(LENGTH, Integer.class);
+        String signal_name = extractor.singleValueParameter(SENSOR_SIGNAL, String.class).trim();
+        String lowest_date = extractor.singleValueParameter(LOWEST_DATE, String.class).trim();//TODO .strip
+        String highest_date = extractor.singleValueParameter(HIGHEST_DATE, String.class).trim();//TODO .strip
+        Integer length = extractor.singleValueParameter(LENGTH, Integer.class);
 
         return new HttpConfig(username, password, signal_name, lowest_date, highest_date, length);
     }
