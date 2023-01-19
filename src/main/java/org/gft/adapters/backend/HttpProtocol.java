@@ -189,7 +189,6 @@ public class HttpProtocol extends PullProtocol {
     return ID;
   }
 
-
   private String login() throws org.apache.http.ParseException {
     String response, token;
 
