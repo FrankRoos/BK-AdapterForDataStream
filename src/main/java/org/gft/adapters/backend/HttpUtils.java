@@ -1,8 +1,11 @@
 package org.gft.adapters.backend;
 
-import org.apache.streampipes.connect.adapter.sdk.ParameterExtractor;
+import org.apache.streampipes.sdk.extractor.StaticPropertyExtractor;
 import org.apache.streampipes.sdk.helpers.Label;
 import org.apache.streampipes.sdk.helpers.Labels;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class HttpUtils {
     private static final String LENGTH = "length";
@@ -11,6 +14,7 @@ public class HttpUtils {
     private static final String SENSOR_SIGNAL = "signal";
     public static final String USERNAME_KEY = "username";
     public static final String PASSWORD_KEY = "password";
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static Label getUsernameLabel() {
         return Labels.withId(USERNAME_KEY);
@@ -36,14 +40,30 @@ public class HttpUtils {
         return Labels.withId(HIGHEST_DATE);
     }
 
-    public static HttpConfig getConfig(ParameterExtractor extractor) {
+    public static HttpConfig getConfig(StaticPropertyExtractor extractor) {
 
-        String username = extractor.singleValue(USERNAME_KEY, String.class).trim();
+        String username = extractor.singleValueParameter(USERNAME_KEY, String.class).trim();
         String password = extractor.secretValue(PASSWORD_KEY);
-        String signal_name = extractor.singleValue(SENSOR_SIGNAL, String.class).trim();
-        String lowest_date = extractor.singleValue(LOWEST_DATE, String.class).trim();//TODO .strip
-        String highest_date = extractor.singleValue(HIGHEST_DATE, String.class).trim();//TODO .strip
-        Integer length = extractor.singleValue(LENGTH, Integer.class);
+        String signal_name = extractor.singleValueParameter(SENSOR_SIGNAL, String.class).trim();
+        String lowest_date = extractor.singleValueParameter(LOWEST_DATE, String.class).trim();//TODO .strip
+        String highest_date = extractor.singleValueParameter(HIGHEST_DATE, String.class).trim();//TODO .strip
+        Integer length = extractor.singleValueParameter(LENGTH, Integer.class);
+
+        if(!highest_date.equals("CurrentDateTime")){
+            try {
+                sdf.parse(highest_date);
+                sdf.setLenient(false);            // strict mode - check 30 or 31 days, leap year
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            sdf.parse(lowest_date);
+            sdf.setLenient(false);            // strict mode - check 30 or 31 days, leap year
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
         return new HttpConfig(username, password, signal_name, lowest_date, highest_date, length);
     }

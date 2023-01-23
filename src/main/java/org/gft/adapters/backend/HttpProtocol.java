@@ -22,7 +22,6 @@ import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 import org.apache.streampipes.connect.adapter.guess.SchemaGuesser;
 import org.apache.streampipes.connect.adapter.model.generic.Protocol;
-import org.apache.streampipes.connect.adapter.sdk.ParameterExtractor;
 import org.apache.streampipes.connect.api.IFormat;
 import org.apache.streampipes.connect.api.IParser;
 import org.apache.streampipes.connect.api.exception.ParseException;
@@ -31,6 +30,7 @@ import org.apache.streampipes.model.connect.grounding.ProtocolDescription;
 import org.apache.streampipes.model.connect.guess.GuessSchema;
 import org.apache.streampipes.model.schema.EventSchema;
 import org.apache.streampipes.sdk.builder.adapter.ProtocolDescriptionBuilder;
+import org.apache.streampipes.sdk.extractor.StaticPropertyExtractor;
 import org.apache.streampipes.sdk.helpers.AdapterSourceType;
 import org.apache.streampipes.sdk.helpers.Locales;
 import org.apache.streampipes.sdk.utils.Assets;
@@ -41,12 +41,15 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 
 /*TODO create for length insertion
        write documentation
@@ -58,7 +61,6 @@ public class HttpProtocol extends PullProtocol {
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
-
   public HttpProtocol() {
   }
 
@@ -85,7 +87,7 @@ public class HttpProtocol extends PullProtocol {
 
   @Override
   public Protocol getInstance(ProtocolDescription protocolDescription, IParser parser, IFormat format) {
-    ParameterExtractor extractor = new ParameterExtractor(protocolDescription.getConfig());
+    StaticPropertyExtractor extractor = StaticPropertyExtractor.from(protocolDescription.getConfig(),  new ArrayList<>());
     HttpConfig config = HttpUtils.getConfig(extractor);
     return new HttpProtocol(parser, format, config);
   }
@@ -94,7 +96,12 @@ public class HttpProtocol extends PullProtocol {
   public GuessSchema getGuessSchema() throws ParseException {
     int n = 2;
 
-    InputStream dataInputStream = getDataFromEndpoint();
+    InputStream dataInputStream;
+    try {
+      dataInputStream = getDataFromEndpoint();
+    } catch (java.text.ParseException e) {
+      throw new RuntimeException(e);
+    }
 
     List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
     if (dataByte.size() < n) {
@@ -112,7 +119,12 @@ public class HttpProtocol extends PullProtocol {
   public List<Map<String, Object>> getNElements(int n) throws ParseException {
     List<Map<String, Object>> result = new ArrayList<>();
 
-    InputStream dataInputStream = getDataFromEndpoint();
+    InputStream dataInputStream;
+    try {
+      dataInputStream = getDataFromEndpoint();
+    } catch (java.text.ParseException e) {
+      throw new RuntimeException(e);
+    }
 
     List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
 
@@ -134,15 +146,15 @@ public class HttpProtocol extends PullProtocol {
 
   }
 
-  public InputStream getDataFromEndpoint() throws ParseException {
+  public InputStream getDataFromEndpoint() throws ParseException, java.text.ParseException {
     String urlString;
     InputStream result = null;
     String accessToken = login();
 
     if(config.getHighestDate().equals("CurrentDateTime")){
-      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(CurrentDateTime())+"&sort="+config.getSort();
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(LastDateTime(),CurrentDateTime())+"&sort="+config.getSort();
     }else {
-      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.getHighestDate())+"&sort="+config.getSort();
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.getLowestDate(), config.getHighestDate())+"&sort="+config.getSort();
     }
 
     //replace spaces by "%20" to avoid 400 Bad Request
@@ -177,11 +189,24 @@ public class HttpProtocol extends PullProtocol {
   }
 
   public String CurrentDateTime(){
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     LocalDateTime now = LocalDateTime.now();
-    System.out.println(dtf2.format(now));
+    System.out.println("Current Time = "+dtf.format(now));
     return dtf.format(now);
+  }
+
+  public String LastDateTime() throws java.text.ParseException {
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    Date myDate = dateFormat.parse(config.getLowestDate());
+    // convert date to localdatetime
+    LocalDateTime localDateTime = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    localDateTime = localDateTime.plusMinutes(5);
+    Date DatePlus = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+    String date = dateFormat.format(DatePlus);
+    config.setLowestDate(date);
+    // convert LocalDateTime to date
+    System.out.println("Last Time = "+date);
+    return date;
   }
 
   @Override

@@ -53,6 +53,8 @@ public abstract class PullProtocol extends Protocol {
                 }
             } catch (ParseException e) {
                 logger.error("Error while parsing: " + e.getMessage());
+            } catch (java.text.ParseException e) {
+                throw new RuntimeException(e);
             }
 
 
@@ -72,5 +74,5 @@ public abstract class PullProtocol extends Protocol {
         scheduler.shutdownNow();
     }
 
-    abstract InputStream getDataFromEndpoint() throws ParseException;
+    abstract InputStream getDataFromEndpoint() throws ParseException, java.text.ParseException;
 }

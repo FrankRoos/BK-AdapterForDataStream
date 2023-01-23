@@ -8,13 +8,13 @@ password.title=Password
 password.description=User dedicated password
 
 length.title=Length
-length.description=Number of data to retrieve (max 30.000 for about four months data)
+length.description=Number of data to retrieve (max 40.000 for about four months data)
 
 lowest_date.title=From - Lowest Date of the Interval
-lowest_date.description=First value of the key for filtering - Example: 2022-07-21 (YYYY-MM-DD)
+lowest_date.description=First value of the key for filtering - Example: 2022-07-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
 
 highest_date.title=To - Highest Date of the Interval
-highest_date.description=Last value of the key for filtering - Example: 2022-12-21 (YYYY-MM-DD)
+highest_date.description=Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
 
 signal.title=Signal Name
 signal.description=Insert the name of the sensor signal
