@@ -41,13 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,16 +49,16 @@ import java.util.Map;
        write documentation
  */
 
-public class HttpProtocol extends PullProtocol {
+public class HttpStreamProtocol extends PullProtocol {
 
   private static final long interval = 300;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
-  public HttpProtocol() {
+  public HttpStreamProtocol() {
   }
 
-  public HttpProtocol(IParser parser, IFormat format, HttpConfig config) {
+  public HttpStreamProtocol(IParser parser, IFormat format, HttpConfig config) {
     super(parser, format, interval);
     this.config = config;
   }
@@ -89,7 +83,7 @@ public class HttpProtocol extends PullProtocol {
   public Protocol getInstance(ProtocolDescription protocolDescription, IParser parser, IFormat format) {
     StaticPropertyExtractor extractor = StaticPropertyExtractor.from(protocolDescription.getConfig(),  new ArrayList<>());
     HttpConfig config = HttpUtils.getConfig(extractor);
-    return new HttpProtocol(parser, format, config);
+    return new HttpStreamProtocol(parser, format, config);
   }
 
   @Override
@@ -97,11 +91,7 @@ public class HttpProtocol extends PullProtocol {
     int n = 2;
 
     InputStream dataInputStream;
-    try {
-      dataInputStream = getDataFromEndpoint();
-    } catch (java.text.ParseException e) {
-      throw new RuntimeException(e);
-    }
+    dataInputStream = getDataFromEndpoint();
 
     List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
     if (dataByte.size() < n) {
@@ -120,11 +110,7 @@ public class HttpProtocol extends PullProtocol {
     List<Map<String, Object>> result = new ArrayList<>();
 
     InputStream dataInputStream;
-    try {
-      dataInputStream = getDataFromEndpoint();
-    } catch (java.text.ParseException e) {
-      throw new RuntimeException(e);
-    }
+    dataInputStream = getDataFromEndpoint();
 
     List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
 
@@ -146,20 +132,10 @@ public class HttpProtocol extends PullProtocol {
 
   }
 
-  public InputStream getDataFromEndpoint() throws ParseException, java.text.ParseException {
-    String urlString;
+  public InputStream getDataFromEndpoint() throws ParseException{
     InputStream result = null;
     String accessToken = login();
-
-    if(config.getHighestDate().equals("CurrentDateTime")){
-      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(LastDateTime(),CurrentDateTime())+"&sort="+config.getSort();
-    }else {
-      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.getLowestDate(), config.getHighestDate())+"&sort="+config.getSort();
-    }
-
-    //replace spaces by "%20" to avoid 400 Bad Request
-    if(urlString.contains(" "))
-      urlString = urlString.replace(" ", "%20");
+    String urlString = getUrl();
 
     try {
       // Set the URL of the API endpoint
@@ -188,26 +164,26 @@ public class HttpProtocol extends PullProtocol {
     return result;
   }
 
-  public String CurrentDateTime(){
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    LocalDateTime now = LocalDateTime.now();
-    System.out.println("Current Time = "+dtf.format(now));
-    return dtf.format(now);
+  private String getUrl(){
+    String urlString = null;
+
+    try{
+      if(config.getHighestDate().equals("CurrentDateTime")){
+        urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(),config.CurrentDateTime())+"&sort="+config.getSort();
+      }else {
+        urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(), config.getHighestDate())+"&sort="+config.getSort();
+      }
+    }catch (java.text.ParseException e){
+      e.printStackTrace();
+    }
+    //replace spaces by "%20" to avoid 400 Bad Request
+    assert urlString != null;
+    if(urlString.contains(" "))
+      urlString = urlString.replace(" ", "%20");
+
+    return urlString;
   }
 
-  public String LastDateTime() throws java.text.ParseException {
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    Date myDate = dateFormat.parse(config.getLowestDate());
-    // convert date to localdatetime
-    LocalDateTime localDateTime = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-    localDateTime = localDateTime.plusMinutes(5);
-    Date DatePlus = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    String date = dateFormat.format(DatePlus);
-    config.setLowestDate(date);
-    // convert LocalDateTime to date
-    System.out.println("Last Time = "+date);
-    return date;
-  }
 
   @Override
   public String getId() {
