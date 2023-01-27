@@ -52,18 +52,19 @@ import java.util.Map;
        write documentation
  */
 
-public class HttpProtocol extends Protocol {
+public class HttpStreamProtocol extends PullProtocol {
 
+  private static final long interval = 300;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
   private String accessToken;
 
-  public HttpProtocol() {
+  public HttpStreamProtocol() {
   }
 
-  public HttpProtocol(IParser parser, IFormat format, HttpConfig config) {
-    super(parser, format);
+  public HttpStreamProtocol(IParser parser, IFormat format, HttpConfig config) {
+    super(parser, format, interval);
     this.config = config;
     this.accessToken = login();
     System.out.println(this.accessToken);
@@ -89,7 +90,7 @@ public class HttpProtocol extends Protocol {
   public Protocol getInstance(ProtocolDescription protocolDescription, IParser parser, IFormat format) {
     StaticPropertyExtractor extractor = StaticPropertyExtractor.from(protocolDescription.getConfig(), new ArrayList<>());
     HttpConfig config = HttpUtils.getConfig(extractor);
-    return new HttpProtocol(parser, format, config);
+    return new HttpStreamProtocol(parser, format, config);
   }
 
   @Override
@@ -141,7 +142,7 @@ public class HttpProtocol extends Protocol {
 
     // Check that result size is n. Currently just an error is logged. Maybe change to an exception
     if (dataByteArray.size() < n) {
-      logger.error("Error in HttpProtocol! User required: " + n + " elements but the resource just had: " +
+      logger.error("Error in HttpStreamProtocol! User required: " + n + " elements but the resource just had: " +
               dataByteArray.size());
     }
 
