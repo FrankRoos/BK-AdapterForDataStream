@@ -2,13 +2,22 @@ package org.gft.adapters.backend;
 
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
+
 public class HttpConfig {
 
     private final Integer length;
     private final String username;
     private final String password;
     private final String signal_name;
-    private final String lowest_date;
+    private String lowest_date;
     private final String highest_date;
     private String filter;
 
@@ -19,6 +28,8 @@ public class HttpConfig {
             "\"PINDOS Signal SH_FM_Tot - FD\":\"618d51aaa73af145294f138f\"}");
     private final JSONObject astander_signals = new JSONObject("{\"Altivar fault code\":\"6167f85c151693290874fd32\", \"Drive state\":\"6167f85c151693290874fd33\"}");
     private final JSONObject nodes_id = new JSONObject("{\"PINDOS\":\"61855a064f181d0f3a3b4d42\",\"ASTANDER\":\"6167f8078870124d6f1bc5e2\"}");
+
+
 
     public HttpConfig(String username, String password, String signal_name, String lowest_date, String highest_date, Integer length) {
         this.username = username;
@@ -68,6 +79,15 @@ public class HttpConfig {
     public String getGrantType(){
         return "password";
     }
+    public String getHighestDate(){
+        return highest_date;
+    }
+    /*public String getLowestDate(){
+        return lowest_date;
+    }
+    public void setLowestDate(String old_date){
+        this.lowest_date = old_date;
+    }*/
 
     public String getScope(){
         return "read_scheduler_administrator write_scheduler_administrator read_dashboards_administrator write_dashboards_administrator " +
@@ -82,18 +102,56 @@ public class HttpConfig {
                     "write_signal_readings_basic_user delete_signal_readings_basic_user read_profile_new_user";
     }
 
-    public String getFilter() {
-        if(this.pindos_signals.has(this.signal_name)){
-            this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
-                    "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
-                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ this.highest_date +" 00:00:00\"}]";
-        } else if (this.astander_signals.has(this.signal_name)) {
-            this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
-                    "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
-                    "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + this.lowest_date +" 00:00:00 - "+ this.highest_date +" 00:00:00\"}]";
+    public String getFilter(String lowest_date, String highest_date) {
+        if(this.highest_date.equals("CurrentDateTime")){
+            if(this.pindos_signals.has(this.signal_name)){
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
+                        "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ highest_date +"\"}]";
+            } else if (this.astander_signals.has(this.signal_name)) {
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
+                        "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ highest_date +"\"}]";
+            }
+        }else{
+            if(this.pindos_signals.has(this.signal_name)){
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
+                        "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ this.highest_date +"\"}]";
+            } else if (this.astander_signals.has(this.signal_name)) {
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
+                        "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ this.highest_date +"\"}]";
+            }
         }
-        System.out.println(this.filter);
+
+        System.out.println("FILTER = "+this.filter);
         return this.filter;
+    }
+
+    public String CurrentDateTime(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println("Current Time = "+dtf.format(now));
+        return dtf.format(now);
+    }
+
+    public String LastDateTime() throws java.text.ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+       String date = " ";
+        try{Date myDate = dateFormat.parse(this.lowest_date);
+            // convert date to localdatetime
+            LocalDateTime local_date_time = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            local_date_time = local_date_time.plusMinutes(5);
+            Date date_plus = Date.from(local_date_time.atZone(ZoneId.systemDefault()).toInstant());
+            date = dateFormat.format(date_plus);
+            this.lowest_date = date;
+        }catch (ParseException e){
+            e.printStackTrace();
+        }
+        // convert LocalDateTime to date
+        System.out.println("Last Time = "+date);
+        return date;
     }
 
 }
