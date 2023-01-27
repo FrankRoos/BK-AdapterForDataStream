@@ -127,11 +127,6 @@ public class HttpStreamProtocol extends PullProtocol {
     return result;
   }
 
-  @Override
-  public void stop() {
-
-  }
-
   public InputStream getDataFromEndpoint() throws ParseException{
     InputStream result = null;
     String accessToken = login();
