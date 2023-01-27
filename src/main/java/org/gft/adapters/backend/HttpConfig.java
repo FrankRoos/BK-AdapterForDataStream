@@ -124,15 +124,12 @@ public class HttpConfig {
                         "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ this.highest_date +"\"}]";
             }
         }
-
-        System.out.println("FILTER = "+this.filter);
         return this.filter;
     }
 
     public String CurrentDateTime(){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
-        System.out.println("Current Time = "+dtf.format(now));
         return dtf.format(now);
     }
 
@@ -149,8 +146,6 @@ public class HttpConfig {
         }catch (ParseException e){
             e.printStackTrace();
         }
-        // convert LocalDateTime to date
-        System.out.println("Last Time = "+date);
         return date;
     }
 

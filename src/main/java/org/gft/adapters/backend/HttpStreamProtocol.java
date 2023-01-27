@@ -68,8 +68,8 @@ public class HttpStreamProtocol extends PullProtocol {
     return ProtocolDescriptionBuilder.create(ID)
             .withAssets(Assets.DOCUMENTATION, Assets.ICON)
             .withLocales(Locales.EN)
-            .category(AdapterType.Generic)
             .sourceType(AdapterSourceType.STREAM)
+            .category(AdapterType.Generic)
             .requiredTextParameter(HttpUtils.getUsernameLabel())
             .requiredSecret(HttpUtils.getPasswordLabel())
             .requiredTextParameter(HttpUtils.getSignalLabel())
@@ -151,7 +151,6 @@ public class HttpStreamProtocol extends PullProtocol {
       connection.connect();
 
       result = connection.getInputStream();
-      System.out.println(result);
     } catch (Exception e) {
       // Handle any exceptions that occur
       e.printStackTrace();
@@ -211,7 +210,6 @@ public class HttpStreamProtocol extends PullProtocol {
       token = json_object.getString("access_token");
 
     } catch (Exception e) {
-      System.out.println("Error while fetching data from URL: " + config.getLoginUrl() + e);
       throw new org.apache.http.ParseException("Error while fetching data from URL: " + config.getLoginUrl());
     }
     return token;
