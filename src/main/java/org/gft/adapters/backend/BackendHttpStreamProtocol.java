@@ -49,16 +49,16 @@ import java.util.Map;
        write documentation
  */
 
-public class HttpStreamProtocol extends PullProtocol {
+public class BackendHttpStreamProtocol extends BackendPullProtocol {
 
   private static final long interval = 300;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   HttpConfig config;
-  public HttpStreamProtocol() {
+  public BackendHttpStreamProtocol() {
   }
 
-  public HttpStreamProtocol(IParser parser, IFormat format, HttpConfig config) {
+  public BackendHttpStreamProtocol(IParser parser, IFormat format, HttpConfig config) {
     super(parser, format, interval);
     this.config = config;
   }
@@ -83,7 +83,7 @@ public class HttpStreamProtocol extends PullProtocol {
   public Protocol getInstance(ProtocolDescription protocolDescription, IParser parser, IFormat format) {
     StaticPropertyExtractor extractor = StaticPropertyExtractor.from(protocolDescription.getConfig(),  new ArrayList<>());
     HttpConfig config = HttpUtils.getConfig(extractor);
-    return new HttpStreamProtocol(parser, format, config);
+    return new BackendHttpStreamProtocol(parser, format, config);
   }
 
   @Override
@@ -95,7 +95,7 @@ public class HttpStreamProtocol extends PullProtocol {
 
     List<byte[]> dataByte = parser.parseNEvents(dataInputStream, n);
     if (dataByte.size() < n) {
-      logger.error("Error in HttpStreamProtocol! Required: " + n + " elements but the resource just had: " +
+      logger.error("Error in BackendHttpStreamProtocol! Required: " + n + " elements but the resource just had: " +
               dataByte.size());
 
       dataByte.addAll(dataByte);
@@ -116,7 +116,7 @@ public class HttpStreamProtocol extends PullProtocol {
 
     // Check that result size is n. Currently just an error is logged. Maybe change to an exception
     if (dataByte.size() < n) {
-      logger.error("Error in HttpStreamProtocol! User required: " + n + " elements but the resource just had: " +
+      logger.error("Error in BackendHttpStreamProtocol! User required: " + n + " elements but the resource just had: " +
               dataByte.size());
     }
 

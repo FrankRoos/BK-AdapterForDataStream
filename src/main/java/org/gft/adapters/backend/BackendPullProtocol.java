@@ -12,19 +12,19 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.concurrent.*;
 
-public abstract class PullProtocol extends Protocol {
+public abstract class BackendPullProtocol extends Protocol {
 
     private ScheduledExecutorService scheduler;
 
-    private final Logger logger = LoggerFactory.getLogger(PullProtocol.class);
+    private final Logger logger = LoggerFactory.getLogger(BackendPullProtocol.class);
 
     private long interval;
 
 
-    public PullProtocol() {
+    public BackendPullProtocol() {
     }
 
-    public PullProtocol(IParser parser, IFormat format, long interval) {
+    public BackendPullProtocol(IParser parser, IFormat format, long interval) {
         super(parser, format);
         this.interval = interval;
     }
