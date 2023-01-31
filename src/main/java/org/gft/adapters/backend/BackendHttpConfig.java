@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 
-public class HttpConfig {
+public class BackendHttpConfig {
 
     private final Integer length;
     private final String username;
@@ -31,7 +31,7 @@ public class HttpConfig {
 
 
 
-    public HttpConfig(String username, String password, String signal_name, String lowest_date, String highest_date, Integer length) {
+    public BackendHttpConfig(String username, String password, String signal_name, String lowest_date, String highest_date, Integer length) {
         this.username = username;
         this.password = password;
         this.signal_name = signal_name;

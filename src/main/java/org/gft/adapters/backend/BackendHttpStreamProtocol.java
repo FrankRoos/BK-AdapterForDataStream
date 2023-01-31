@@ -45,20 +45,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/*TODO create for length insertion
-       write documentation
- */
-
 public class BackendHttpStreamProtocol extends BackendPullProtocol {
 
   private static final long interval = 300;
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
-  HttpConfig config;
+  BackendHttpConfig config;
   public BackendHttpStreamProtocol() {
   }
 
-  public BackendHttpStreamProtocol(IParser parser, IFormat format, HttpConfig config) {
+  public BackendHttpStreamProtocol(IParser parser, IFormat format, BackendHttpConfig config) {
     super(parser, format, interval);
     this.config = config;
   }
@@ -70,19 +66,19 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
             .withLocales(Locales.EN)
             .sourceType(AdapterSourceType.STREAM)
             .category(AdapterType.Generic)
-            .requiredTextParameter(HttpUtils.getUsernameLabel())
-            .requiredSecret(HttpUtils.getPasswordLabel())
-            .requiredTextParameter(HttpUtils.getSignalLabel())
-            .requiredIntegerParameter(HttpUtils.getLengthLabel())
-            .requiredTextParameter(HttpUtils.getLowestLabel())
-            .requiredTextParameter(HttpUtils.getHighestLabel(), "CurrentDateTime")
+            .requiredTextParameter(BackendHttpUtils.getUsernameLabel())
+            .requiredSecret(BackendHttpUtils.getPasswordLabel())
+            .requiredTextParameter(BackendHttpUtils.getSignalLabel())
+            .requiredIntegerParameter(BackendHttpUtils.getLengthLabel())
+            .requiredTextParameter(BackendHttpUtils.getLowestLabel())
+            .requiredTextParameter(BackendHttpUtils.getHighestLabel(), "CurrentDateTime")
             .build();
   }
 
   @Override
   public Protocol getInstance(ProtocolDescription protocolDescription, IParser parser, IFormat format) {
     StaticPropertyExtractor extractor = StaticPropertyExtractor.from(protocolDescription.getConfig(),  new ArrayList<>());
-    HttpConfig config = HttpUtils.getConfig(extractor);
+    BackendHttpConfig config = BackendHttpUtils.getConfig(extractor);
     return new BackendHttpStreamProtocol(parser, format, config);
   }
 

@@ -7,7 +7,7 @@ import org.apache.streampipes.sdk.helpers.Labels;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-public class HttpUtils {
+public class BackendHttpUtils {
     private static final String LENGTH = "length";
     private static final String LOWEST_DATE = "lowest_date";
     private static final String HIGHEST_DATE = "highest_date";
@@ -40,7 +40,7 @@ public class HttpUtils {
         return Labels.withId(HIGHEST_DATE);
     }
 
-    public static HttpConfig getConfig(StaticPropertyExtractor extractor) {
+    public static BackendHttpConfig getConfig(StaticPropertyExtractor extractor) {
 
         String username = extractor.singleValueParameter(USERNAME_KEY, String.class).trim();
         String password = extractor.secretValue(PASSWORD_KEY);
@@ -65,7 +65,7 @@ public class HttpUtils {
             e.printStackTrace();
         }
 
-        return new HttpConfig(username, password, signal_name, lowest_date, highest_date, length);
+        return new BackendHttpConfig(username, password, signal_name, lowest_date, highest_date, length);
     }
 
 }
