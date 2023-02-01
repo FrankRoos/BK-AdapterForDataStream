@@ -1,7 +1,7 @@
 org.gft.adapters.backend.title= HTTP Stream (Backend KYKLOS)
-org.gft.adapters.backend.description=Regularly Poll an HTTP Endpoint.
+org.gft.adapters.backend.description=Continuously fetched events from an HTTP REST endpoint.
 
-username.title=Username
+username.title=User
 username.description=Username
 
 password.title=Password

@@ -5,19 +5,19 @@ username.title=User
 username.description=Username
 
 password.title=Password
-password.description=User dedicated password
+password.description=User dedicated password.
 
 length.title=Length
-length.description=Number of data to retrieve (max 30.000)
+length.description=Number of data to retrieve (max 30.000).
 
 lowest_date.title=From - Lowest Date of the Interval
-lowest_date.description=First value of the key for filtering - Example: 2022-07-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
+lowest_date.description=First value of the key for filtering - Example: 2022-07-21 00:00:00 (YYYY-MM-DD HH:mm:ss).
 
 highest_date.title=To - Highest Date of the Interval
-highest_date.description=Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
+highest_date.description=Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss).
 
 signal.title=Signal Name
-signal.description=Insert the name of the sensor signal
+signal.description=The name of the sensor signal.
 
 
 
