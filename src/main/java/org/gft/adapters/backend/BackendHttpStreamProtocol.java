@@ -152,8 +152,6 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
       // Send the GET request to the API endpoint
       connection.connect();
 
-      System.out.println(config.getLowestDate() +"  "+ config.CurrentDateTime());
-
       result = connection.getInputStream();
     } catch (Exception e) {
       // Handle any exceptions that occur
