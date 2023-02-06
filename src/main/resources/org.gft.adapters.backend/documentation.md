@@ -36,9 +36,8 @@ Configurations a user has to provide
 User dedicated password
 #### Signal
 The name of the sensor signal
-#### Length
-Number of data to retrieve (max 30.000)
 #### From - The Lowest Date of the Interval
 First value of the key for filtering - Example: 2022-07-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
 #### To - The Highest Date of the Interval
-Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss)
+Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss).
+The default increasing value (CurrentDateTime that corresponds to the time of the polling.) can be replaced by a static one (past or future).

@@ -41,13 +41,15 @@ public class BackendHttpUtils {
     }
 
     public static BackendHttpConfig getConfig(StaticPropertyExtractor extractor) {
+        //TODO delete length field
 
         String username = extractor.singleValueParameter(USERNAME_KEY, String.class).trim();
         String password = extractor.secretValue(PASSWORD_KEY);
         String signal_name = extractor.singleValueParameter(SENSOR_SIGNAL, String.class).trim();
         String lowest_date = extractor.singleValueParameter(LOWEST_DATE, String.class).trim();//TODO .strip
         String highest_date = extractor.singleValueParameter(HIGHEST_DATE, String.class).trim();//TODO .strip
-        Integer length = extractor.singleValueParameter(LENGTH, Integer.class);
+        //Integer length = extractor.singleValueParameter(LENGTH, Integer.class);
+        Integer length = 100;
 
         if(!highest_date.equals("CurrentDateTime")){
             try {
@@ -64,6 +66,10 @@ public class BackendHttpUtils {
         } catch (ParseException e) {
             e.printStackTrace();
         }
+
+        /*if(length < 20 || length > 30000){
+            throw new RuntimeException("ERROR! The Length Input Don't Respect The Requirement");
+        }*/
 
         return new BackendHttpConfig(username, password, signal_name, lowest_date, highest_date, length);
     }

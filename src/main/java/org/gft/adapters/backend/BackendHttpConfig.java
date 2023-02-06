@@ -28,8 +28,8 @@ public class BackendHttpConfig {
             "\"PINDOS Signal SH_FM_Tot - FD\":\"618d51aaa73af145294f138f\"}");
     private final JSONObject astander_signals = new JSONObject("{\"Altivar fault code\":\"6167f85c151693290874fd32\", \"Drive state\":\"6167f85c151693290874fd33\"}");
     private final JSONObject nodes_id = new JSONObject("{\"PINDOS\":\"61855a064f181d0f3a3b4d42\",\"ASTANDER\":\"6167f8078870124d6f1bc5e2\"}");
-
-
+    private boolean first_time = true;
+    DateFormat date_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public BackendHttpConfig(String username, String password, String signal_name, String lowest_date, String highest_date, Integer length) {
         this.username = username;
@@ -82,12 +82,9 @@ public class BackendHttpConfig {
     public String getHighestDate(){
         return highest_date;
     }
-    /*public String getLowestDate(){
+    public String getLowestDate(){
         return lowest_date;
     }
-    public void setLowestDate(String old_date){
-        this.lowest_date = old_date;
-    }*/
 
     public String getScope(){
         return "read_scheduler_administrator write_scheduler_administrator read_dashboards_administrator write_dashboards_administrator " +
@@ -133,20 +130,58 @@ public class BackendHttpConfig {
         return dtf.format(now);
     }
 
-    public String LastDateTime() throws java.text.ParseException {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-       String date = " ";
-        try{Date myDate = dateFormat.parse(this.lowest_date);
-            // convert date to localdatetime
-            LocalDateTime local_date_time = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            local_date_time = local_date_time.plusMinutes(5);
-            Date date_plus = Date.from(local_date_time.atZone(ZoneId.systemDefault()).toInstant());
-            date = dateFormat.format(date_plus);
-            this.lowest_date = date;
+    public String NextDateTime(){
+        Date myDate = null;
+
+        try{
+            myDate = date_format.parse(this.lowest_date);
         }catch (ParseException e){
             e.printStackTrace();
         }
+
+        assert myDate != null;
+        LocalDateTime local_date_time = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        local_date_time = local_date_time.plusMinutes(120);
+
+        Date date_plus = Date.from(local_date_time.atZone(ZoneId.systemDefault()).toInstant());
+
+        return date_format.format(date_plus);
+    }
+
+    public String LastDateTime(long offset) {
+        Date myDate = null;
+
+        try{
+            myDate = date_format.parse(this.lowest_date);
+        }catch (ParseException e){
+            e.printStackTrace();
+        }
+
+        assert myDate != null;
+        LocalDateTime local_date_time = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        if(this.first_time){
+            this.first_time = false;
+            local_date_time = local_date_time.minusMinutes(240);
+        }
+        local_date_time = local_date_time.plusMinutes(offset);
+
+        Date date_plus = Date.from(local_date_time.atZone(ZoneId.systemDefault()).toInstant());
+        String date = date_format.format(date_plus);
+        this.lowest_date = date;
+
         return date;
+    }
+
+    String getMillis(String date){
+        String timestamp = null;
+        try{
+            Date myDate = date_format.parse(date);
+            timestamp = String.valueOf(myDate.getTime());
+        }catch (ParseException e){
+            e.printStackTrace();
+        }
+        return timestamp;
     }
 
 }

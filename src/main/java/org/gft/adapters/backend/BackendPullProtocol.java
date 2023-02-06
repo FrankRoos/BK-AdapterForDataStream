@@ -15,11 +15,9 @@ import java.util.concurrent.*;
 public abstract class BackendPullProtocol extends Protocol {
 
     private ScheduledExecutorService scheduler;
-
     private final Logger logger = LoggerFactory.getLogger(BackendPullProtocol.class);
 
     private long interval;
-
 
     public BackendPullProtocol() {
     }
@@ -38,7 +36,6 @@ public abstract class BackendPullProtocol extends Protocol {
 
     }
 
-
     private void executeProtocolLogic(IAdapterPipeline adapterPipeline) {
         final Runnable task = () -> {
 
@@ -49,7 +46,7 @@ public abstract class BackendPullProtocol extends Protocol {
                 if(data != null) {
                     parser.parse(data, stk);
                 } else {
-                    logger.warn("Could not receive data from Endpoint. Try again in " + interval + " seconds.");
+                    logger.warn("Could not receive data from Endpoint. Try again in " + this.interval + " seconds.");
                 }
             } catch (ParseException e) {
                 logger.error("Error while parsing: " + e.getMessage());
@@ -57,11 +54,10 @@ public abstract class BackendPullProtocol extends Protocol {
                 throw new RuntimeException(e);
             }
 
-
         };
-
+        System.out.println(this.interval);
         scheduler = Executors.newScheduledThreadPool(1);
-        ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 1, interval, TimeUnit.SECONDS);
+        ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 1, this.interval, TimeUnit.SECONDS);
         try {
             handle.get();
         } catch (ExecutionException | InterruptedException e ) {

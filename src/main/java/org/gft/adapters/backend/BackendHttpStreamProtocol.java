@@ -47,7 +47,7 @@ import java.util.Map;
 
 public class BackendHttpStreamProtocol extends BackendPullProtocol {
 
-  private static final long interval = 300;
+  private static final long interval = 300; //TODO set this in HttpConfig
   Logger logger = LoggerFactory.getLogger(Protocol.class);
   public static final String ID = "org.gft.adapters.backend";
   BackendHttpConfig config;
@@ -69,7 +69,7 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
             .requiredTextParameter(BackendHttpUtils.getUsernameLabel())
             .requiredSecret(BackendHttpUtils.getPasswordLabel())
             .requiredTextParameter(BackendHttpUtils.getSignalLabel())
-            .requiredIntegerParameter(BackendHttpUtils.getLengthLabel())
+            //.requiredIntegerParameter(BackendHttpUtils.getLengthLabel())
             .requiredTextParameter(BackendHttpUtils.getLowestLabel())
             .requiredTextParameter(BackendHttpUtils.getHighestLabel(), "CurrentDateTime")
             .build();
@@ -128,6 +128,12 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
     String accessToken = login();
     String urlString = getUrl();
 
+    if (!config.getHighestDate().equals("CurrentDateTime") && config.getLowestDate().compareToIgnoreCase(config.getHighestDate()) >= 0) {
+      logger.warn("Adapter Stopped: there is not anymore data to retrieve in the time interval!!!");
+      logger.warn("Stop Adapter on the User Interface!!!");
+      stop();
+    }
+
     try {
       // Set the URL of the API endpoint
       URL url = new URL(urlString);
@@ -141,10 +147,12 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
       connection.setRequestProperty("Transfer-Encoding", "chunked");
       connection.setRequestProperty("Connection", "keep-alive");
       connection.setDoOutput(true);
-      connection.setConnectTimeout(4000000);
-      connection.setReadTimeout(400000);
+      connection.setConnectTimeout(60000);
+      connection.setReadTimeout(120000);
       // Send the GET request to the API endpoint
       connection.connect();
+
+      System.out.println(config.getLowestDate() +"  "+ config.CurrentDateTime());
 
       result = connection.getInputStream();
     } catch (Exception e) {
@@ -155,19 +163,17 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
   }
 
   private String getUrl(){
-    String urlString = null;
+    String urlString;
+    double hours = 2.1*60*60* 1_000;
+    double time_difference = Long.parseLong(config.getMillis(config.CurrentDateTime())) - Long.parseLong(config.getMillis(config.getLowestDate()));
 
-    try{
-      if(config.getHighestDate().equals("CurrentDateTime")){
-        urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(),config.CurrentDateTime())+"&sort="+config.getSort();
-      }else {
-        urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(), config.getHighestDate())+"&sort="+config.getSort();
-      }
-    }catch (java.text.ParseException e){
-      e.printStackTrace();
+    if(time_difference <= hours && config.getHighestDate().equals("CurrentDateTime")){
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(5),config.CurrentDateTime())+"&sort="+config.getSort();
+    }else{
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(120),config.NextDateTime())+"&sort="+config.getSort();
     }
+
     //replace spaces by "%20" to avoid 400 Bad Request
-    assert urlString != null;
     if(urlString.contains(" "))
       urlString = urlString.replace(" ", "%20");
 

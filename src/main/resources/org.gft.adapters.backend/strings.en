@@ -1,5 +1,5 @@
 org.gft.adapters.backend.title= HTTP Stream (Backend KYKLOS)
-org.gft.adapters.backend.description=Continuously fetched events from an HTTP REST endpoint.
+org.gft.adapters.backend.description=Continuously fetched events from an HTTP REST endpoint of the Backend.
 
 username.title=User
 username.description=Username
@@ -8,13 +8,13 @@ password.title=Password
 password.description=User dedicated password.
 
 length.title=Length
-length.description=Number of data to retrieve (max 30.000).
+length.description=Number of data that could be fetched (max 5.000) after each waiting period (polling interval). For example, you can set 5000 and receive 1000. So it depends on the number of data available in the backend.
 
 lowest_date.title=From - Lowest Date of the Interval
 lowest_date.description=First value of the key for filtering - Example: 2022-07-21 00:00:00 (YYYY-MM-DD HH:mm:ss).
 
 highest_date.title=To - Highest Date of the Interval
-highest_date.description=Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss).
+highest_date.description=Last value of the key for filtering - Example: 2022-12-21 00:00:00 (YYYY-MM-DD HH:mm:ss). The default increasing value (CurrentDateTime that corresponds to the time of the polling.) can be replaced by a static one (past or future).
 
 signal.title=Signal Name
 signal.description=The name of the sensor signal.
