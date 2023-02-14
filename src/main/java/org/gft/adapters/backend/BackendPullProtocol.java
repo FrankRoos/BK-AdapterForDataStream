@@ -55,7 +55,7 @@ public abstract class BackendPullProtocol extends Protocol {
             }
 
         };
-        System.out.println(this.interval);
+
         scheduler = Executors.newScheduledThreadPool(1);
         ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(task, 1, this.interval, TimeUnit.SECONDS);
         try {

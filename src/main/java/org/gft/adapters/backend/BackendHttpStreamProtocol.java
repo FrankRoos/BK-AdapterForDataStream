@@ -18,6 +18,8 @@
 
 package org.gft.adapters.backend;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
 import org.apache.streampipes.connect.adapter.guess.SchemaGuesser;
@@ -34,7 +36,6 @@ import org.apache.streampipes.sdk.extractor.StaticPropertyExtractor;
 import org.apache.streampipes.sdk.helpers.AdapterSourceType;
 import org.apache.streampipes.sdk.helpers.Locales;
 import org.apache.streampipes.sdk.utils.Assets;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,6 +129,8 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
     String accessToken = login();
     String urlString = getUrl();
 
+    System.out.println(urlString);
+
     if (!config.getHighestDate().equals("CurrentDateTime") && config.getLowestDate().compareToIgnoreCase(config.getHighestDate()) >= 0) {
       logger.warn("Adapter Stopped: there is not anymore data to retrieve in the time interval!!!");
       logger.warn("Stop Adapter on the User Interface!!!");
@@ -162,13 +165,13 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
 
   private String getUrl(){
     String urlString;
-    double hours = 2.1*60*60* 1_000;
+    double hours = 24*60*60* 1_000;
     double time_difference = Long.parseLong(config.getMillis(config.CurrentDateTime())) - Long.parseLong(config.getMillis(config.getLowestDate()));
 
     if(time_difference <= hours && config.getHighestDate().equals("CurrentDateTime")){
       urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(5),config.CurrentDateTime())+"&sort="+config.getSort();
     }else{
-      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(120),config.NextDateTime())+"&sort="+config.getSort();
+      urlString = config.getBaseUrl()+"?page="+config.getPage()+"&length="+config.getLength()+"&filter="+config.getFilter(config.LastDateTime(1360),config.NextDateTime(1380))+"&sort="+config.getSort();
     }
 
     //replace spaces by "%20" to avoid 400 Bad Request
@@ -204,10 +207,9 @@ public class BackendHttpStreamProtocol extends BackendPullProtocol {
       if (response == null)
         throw new org.apache.http.ParseException("Could not receive Data from file: " + config.getLoginUrl());
 
-      // Parse the JSON string as a JSON object
-      JSONObject json_object = new JSONObject(response);
+      JsonObject json_object = new Gson().fromJson(response, JsonObject.class);
       // Access the data in the JSON object
-      token = json_object.getString("access_token");
+      token = json_object.get("access_token").getAsString();
 
     } catch (Exception e) {
       throw new org.apache.http.ParseException("Error while fetching data from URL: " + config.getLoginUrl());

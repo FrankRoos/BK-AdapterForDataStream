@@ -1,6 +1,8 @@
 package org.gft.adapters.backend;
 
-import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -21,13 +23,13 @@ public class BackendHttpConfig {
     private final String highest_date;
     private String filter;
 
-    private final JSONObject pindos_signals = new JSONObject("{\"PINDOS Signal HW_FM_Flow - FD\":\"618d4fade191ea48057c1a8d\", \"PINDOS Signal HW_FM_Tot - FD\":\"618d4fcd68387a67545e67e3\", " +
+    private final JsonObject pindos_signals = new Gson().fromJson("{\"PINDOS Signal HW_FM_Flow - FD\":\"618d4fade191ea48057c1a8d\", \"PINDOS Signal HW_FM_Tot - FD\":\"618d4fcd68387a67545e67e3\", " +
             "\"PINDOS Signal Ptot - Dr1\":\"618d3d155c2d32157b434782\", \"PINDOS Signal Ptot - Dr2\":\"6189572ca15d1114f912d093\", \"PINDOS Signal Ptot - Dr3\":\"618d3fbf7ec30a4cf2014a75\", " +
             "\"PINDOS Signal Ptot - Ph\":\"618d415e54ef02535004a25a\", \"PINDOS Signal Ptot - Ww1\":\"618d43633f6027149c2c0f5f\", \"PINDOS Signal Ptot - Ww2\":\"618d4507536f70692e5839be\", " +
             "\"PINDOS Signal SB_FM_Flow - FD\":\"618d4b40ba7f19144a228d90\", \"PINDOS Signal SB_FM_Tot - FD\":\"618d4f4e536f70692e5839f2\", \"PINDOS Signal SH_FM_Flow - FD\":\"618d4ff7ba7f19144a228d9f\", " +
-            "\"PINDOS Signal SH_FM_Tot - FD\":\"618d51aaa73af145294f138f\"}");
-    private final JSONObject astander_signals = new JSONObject("{\"Altivar fault code\":\"6167f85c151693290874fd32\", \"Drive state\":\"6167f85c151693290874fd33\"}");
-    private final JSONObject nodes_id = new JSONObject("{\"PINDOS\":\"61855a064f181d0f3a3b4d42\",\"ASTANDER\":\"6167f8078870124d6f1bc5e2\"}");
+            "\"PINDOS Signal SH_FM_Tot - FD\":\"618d51aaa73af145294f138f\"}", JsonObject.class);
+    private final JsonObject astander_signals = new Gson().fromJson("{\"Altivar fault code\":\"6167f85c151693290874fd32\", \"Drive state\":\"6167f85c151693290874fd33\"}", JsonObject.class);
+    private final JsonObject nodes_id = new Gson().fromJson("{\"PINDOS\":\"61855a064f181d0f3a3b4d42\",\"ASTANDER\":\"6167f8078870124d6f1bc5e2\"}", JsonObject.class);
     private boolean first_time = true;
     DateFormat date_format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -102,22 +104,22 @@ public class BackendHttpConfig {
     public String getFilter(String lowest_date, String highest_date) {
         if(this.highest_date.equals("CurrentDateTime")){
             if(this.pindos_signals.has(this.signal_name)){
-                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
-                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+this.nodes_id.get("PINDOS")+"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+ this.pindos_signals.get(this.signal_name)+"]}," +
                         "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ highest_date +"\"}]";
             } else if (this.astander_signals.has(this.signal_name)) {
-                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
-                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+this.nodes_id.get("ASTANDER")+"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+ this.astander_signals.get(this.signal_name)+"]}," +
                         "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ highest_date +"\"}]";
             }
         }else{
             if(this.pindos_signals.has(this.signal_name)){
-                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("PINDOS")+"\"]}," +
-                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.pindos_signals.get(this.signal_name)+"\"]}," +
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+this.nodes_id.get("PINDOS")+"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+ this.pindos_signals.get(this.signal_name)+"]}," +
                         "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ this.highest_date +"\"}]";
             } else if (this.astander_signals.has(this.signal_name)) {
-                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+this.nodes_id.get("ASTANDER")+"\"]}," +
-                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":[\""+ this.astander_signals.get(this.signal_name)+"\"]}," +
+                this.filter = "[{\"scope\":\"comp_signal.node._id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+this.nodes_id.get("ASTANDER")+"]}," +
+                        "{\"scope\":\"comp_signal_id\",\"type\":\"object-id\",\"operator\":\"in\", \"value\":["+ this.astander_signals.get(this.signal_name)+"]}," +
                         "{\"scope\":\"date\",\"type\":\"date-range\",\"operator\":\">= <\",\"value\":\"" + lowest_date +" - "+ this.highest_date +"\"}]";
             }
         }
@@ -130,7 +132,7 @@ public class BackendHttpConfig {
         return dtf.format(now);
     }
 
-    public String NextDateTime(){
+    public String NextDateTime(long offset){
         Date myDate = null;
 
         try{
@@ -141,7 +143,7 @@ public class BackendHttpConfig {
 
         assert myDate != null;
         LocalDateTime local_date_time = myDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        local_date_time = local_date_time.plusMinutes(120);
+        local_date_time = local_date_time.plusMinutes(offset);
 
         Date date_plus = Date.from(local_date_time.atZone(ZoneId.systemDefault()).toInstant());
 
@@ -162,7 +164,7 @@ public class BackendHttpConfig {
 
         if(this.first_time){
             this.first_time = false;
-            local_date_time = local_date_time.minusMinutes(240);
+            local_date_time = local_date_time.minusMinutes(offset);
         }
         local_date_time = local_date_time.plusMinutes(offset);
 

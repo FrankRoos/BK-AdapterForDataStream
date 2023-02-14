@@ -49,7 +49,7 @@ public class BackendHttpUtils {
         String lowest_date = extractor.singleValueParameter(LOWEST_DATE, String.class).trim();//TODO .strip
         String highest_date = extractor.singleValueParameter(HIGHEST_DATE, String.class).trim();//TODO .strip
         //Integer length = extractor.singleValueParameter(LENGTH, Integer.class);
-        Integer length = 100;
+        Integer length = 300;
 
         if(!highest_date.equals("CurrentDateTime")){
             try {
